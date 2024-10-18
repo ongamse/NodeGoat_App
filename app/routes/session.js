@@ -137,14 +137,6 @@ function SessionHandler(db) {
 
 (userName, firstName, lastName, password, verify, email, errors) => {
 
-    const USER_RE = /^.{1,20}$/;
-    const FNAME_RE = /^.{1,100}$/;
-    const LNAME_RE = /^.{1,100}$/;
-    const EMAIL_RE = /^[\S]+@[\S]+\.[\S]+$/;
-    //Fix for A2-2 - Broken Authentication -  requires stronger password
-    //(at least 8 characters with numbers and both lowercase and uppercase letters.)
-    const PASS_RE =/^(?=.*\d)(?=.*[a-z])(?=.*[A-Z]).{8,}$/;
-
     errors.userNameError = "";
     errors.firstNameError = "";
     errors.lastNameError = "";
@@ -180,15 +172,14 @@ function SessionHandler(db) {
             return false;
         }
     }
-    //Hash the password before storing it
-    const salt = bcrypt.genSaltSync(10);
-    const hash = bcrypt.hashSync(password, salt);
+    // Use constant-time comparison to prevent timing attacks
+    if (!crypto.timingSafeEqual(Buffer.from(password), Buffer.from(verify))) {
+        errors.verifyError = "Passwords do not match";
+        return false;
+    }
+    return true;
+}
 
-    //Store the hashed password instead of the plain text password
-    //Also, use a constant-time comparison function like crypto.timingSafeEqual for password checking
-    if (crypto.timingSafeEqual(bcrypt.hashSync(password, salt), hash)) {
-        //Password is correct
-    } else {
         //Password is incorrect
     }
 
@@ -268,6 +259,7 @@ function SessionHandler(db) {
 }
 
 module.exports = SessionHandler;
+
 
 
 

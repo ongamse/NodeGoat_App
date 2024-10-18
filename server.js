@@ -35,13 +35,17 @@ const httpsOptions = {
     }
     console.log(`Connected to the database`);
 
-    app.use(favicon(__dirname + "/app/assets/favicon.ico"));
+    app.disable("x-powered-by");
+    app.use(helmet.frameguard());
+    app.use(helmet.noCache());
+    app.use(helmet.contentSecurityPolicy());
+    app.use(helmet.hsts());
+    app.use(helmet.xssFilter({ setOnOldIE: true }));
+    app.use(nosniff());
 
-    app.use(bodyParser.json({limit: '1mb'}));
-    app.use(bodyParser.urlencoded({
-        extended: false,
-        limit: '1mb'
-    }));
+    app.use(favicon(__dirname + "/app/assets/favicon.ico"));
+    app.use(bodyParser.json({ limit: '1mb' }));
+    app.use(bodyParser.urlencoded({ extended: true, limit: '1mb' }));
 
     app.use(session({
         secret: cookieSecret,
@@ -49,24 +53,23 @@ const httpsOptions = {
         resave: true,
         cookie: {
             httpOnly: true,
-            secure: true,
-            sameSite: 'none'
+            secure: false
         }
     }));
 
-    app.use(csrf({ cookie: true }));
+    app.use(csrf());
     app.use((req, res, next) => {
-        res.locals.csrftoken = req.csrfToken();
+        res.locals.csrftoken = req.csrfToken;
         next();
     });
 
     app.engine(".html", consolidate.swig);
     app.set("view engine", "html");
     app.set("views", `${__dirname}/app/views`);
-    app.use(express.static(`${__dirname}/app/assets`));
+    app.use(express.static(`${__dirname}/app/assets`, { maxAge: '365d' }));
 
     marked.setOptions({
-        sanitize: true
+        sanitize: false
     });
     app.locals.marked = marked;
 
@@ -80,8 +83,8 @@ const httpsOptions = {
         console.log(`Express http server listening on port ${port}`);
     });
 
-    https.createServer(httpsOptions, app).listen(port, () => {
-        console.log(`Express https server listening on port ${port}`);
+}
+
     });
 
 }
@@ -115,6 +118,7 @@ const httpsOptions = {
 
 
 }
+
 
 
 

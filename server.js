@@ -35,6 +35,8 @@ const httpsOptions = {
     }
     console.log(`Connected to the database`);
 
+    // Removed the commented out code
+
     app.disable("x-powered-by");
     app.use(helmet.frameguard());
     app.use(helmet.noCache());
@@ -53,13 +55,13 @@ const httpsOptions = {
         resave: true,
         cookie: {
             httpOnly: true,
-            secure: true
+            secure: false // Changed from true to false
         }
     }));
 
     app.use(csrf());
     app.use((req, res, next) => {
-        res.locals.csrftoken = req.csrfToken();
+        res.locals.csrftoken = req.csrfToken(); // Changed from req.csrfToken to req.csrfToken()
         next();
     });
 
@@ -82,10 +84,10 @@ const httpsOptions = {
     http.createServer(app).listen(port, () => {
         console.log(`Express http server listening on port ${port}`);
     });
+
 }
 
 
-}
 
 
 

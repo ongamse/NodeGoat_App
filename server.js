@@ -37,26 +37,19 @@ const httpsOptions = {
 
     app.use(favicon(__dirname + "/app/assets/favicon.ico"));
 
-    app.use(bodyParser.json());
-    app.use(bodyParser.urlencoded({
-        extended: false
-    }));
+    app.use(bodyParser.json({ limit: '5mb' })); // Limit size of body to 5mb
+    app.use(bodyParser.urlencoded({ extended: false })); // Disable extended parsing
 
     app.use(session({
         secret: cookieSecret,
         saveUninitialized: true,
         resave: true,
+        key: "sessionId",
         cookie: {
             httpOnly: true,
-            secure: true
+            secure: false // Remember to start an HTTPS server to get this working
         }
     }));
-
-    app.use(csrf());
-    app.use((req, res, next) => {
-        res.locals.csrftoken = req.csrfToken();
-        next();
-    });
 
     app.engine(".html", consolidate.swig);
     app.set("view engine", "html");
@@ -71,11 +64,20 @@ const httpsOptions = {
     routes(app, db);
 
     swig.setDefaults({
-        autoescape: true
+        autoescape: false
     });
 
     http.createServer(app).listen(port, () => {
         console.log(`Express http server listening on port ${port}`);
+    });
+
+    // Uncomment the following lines to enable HTTPS
+    // https.createServer(httpsOptions, app).listen(port, () => {
+    //     console.log(`Express https server listening on port ${port}`);
+    // });
+
+}
+
     });
 
     https.createServer(httpsOptions, app).listen(port, () => {
@@ -104,6 +106,7 @@ const httpsOptions = {
 
 
 }
+
 
 
 

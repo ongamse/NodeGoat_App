@@ -9,30 +9,48 @@ function ResearchHandler(db) {
 
     const researchDAO = new ResearchDAO(db);
 
-    this.displayResearch = (req, res) => {
-
-        if (req.query.symbol) {
-            const url = req.query.url + req.query.symbol;
-            return needle.get(url, (error, newResponse, body) => {
-                if (!error && newResponse.statusCode === 200) {
-                    res.writeHead(200, {
-                        "Content-Type": "text/html"
-                    });
-                }
+(req, res) => {
+    if (req.query.symbol && validUrl.isUri(req.query.url)) {
+        const url = req.query.url + req.query.symbol;
+        needle.get(url, (error, newResponse, body) => {
+            if (!error && newResponse.statusCode === 200) {
+                res.writeHead(200, {
+                    "Content-Type": "text/html"
+                });
+                let sanitizedBody = xss.inHTMLData(body); // sanitize body before output
                 res.write("<h1>The following is the stock information you requested.</h1>\n\n");
                 res.write("\n\n");
-                if (body) {
-                    res.write(body);
+                if (sanitizedBody) {
+                    res.write(sanitizedBody);
                 }
-                return res.end();
-            });
-        }
-
+            } else {
+                res.writeHead(500);
+                res.write('Error processing your request.');
+            }
+            return res.end();
+        });
+    } else {
         return res.render("research", {
             environmentalScripts
         });
+    }
+}
+
+            return res.end();
+        });
+    } else {
+        res.writeHead(400, {
+            "Content-Type": "text/plain"
+        });
+        res.write("Invalid symbol provided.");
+        return res.end();
+    }
+}
+
     };
 
 }
 
 module.exports = ResearchHandler;
+
+

@@ -67,10 +67,12 @@ const index = (app, db) => {
     app.post("/memos", isLoggedIn, memosHandler.addMemos);
 
     // Handle redirect for learning resources link
-    app.get("/learn", isLoggedIn, (req, res) => {
-        // Insecure way to handle redirects by taking redirect url from query string
-        return res.redirect(req.query.url);
-    });
+(req, res) => {
+    // Validate and sanitize the URL before redirecting
+    const url = validator.isURL(req.query.url) ? req.query.url : '/';
+    return res.redirect(302, url);
+}
+
 
     // Research Page
     app.get("/research", isLoggedIn, researchHandler.displayResearch);
@@ -83,3 +85,4 @@ const index = (app, db) => {
 };
 
 module.exports = index;
+

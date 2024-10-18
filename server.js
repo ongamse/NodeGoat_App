@@ -35,19 +35,12 @@ const httpsOptions = {
     }
     console.log(`Connected to the database`);
 
-    // Removed the commented out code
-
-    app.disable("x-powered-by");
-    app.use(helmet.frameguard());
-    app.use(helmet.noCache());
-    app.use(helmet.contentSecurityPolicy());
-    app.use(helmet.hsts());
-    app.use(helmet.xssFilter({ setOnOldIE: true }));
-    app.use(nosniff());
-
     app.use(favicon(__dirname + "/app/assets/favicon.ico"));
+
     app.use(bodyParser.json());
-    app.use(bodyParser.urlencoded({ extended: false }));
+    app.use(bodyParser.urlencoded({
+        extended: false
+    }));
 
     app.use(session({
         secret: cookieSecret,
@@ -61,7 +54,7 @@ const httpsOptions = {
 
     app.use(csrf());
     app.use((req, res, next) => {
-        res.locals.csrftoken = req.csrfToken;
+        res.locals.csrftoken = req.csrfToken();
         next();
     });
 
@@ -85,7 +78,13 @@ const httpsOptions = {
         console.log(`Express http server listening on port ${port}`);
     });
 
+    https.createServer(httpsOptions, app).listen(port, () => {
+        console.log(`Express https server listening on port ${port}`);
+    });
+
 }
+
+
 
 
 

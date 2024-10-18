@@ -168,7 +168,7 @@ function SessionHandler(db) {
             " including numbers, lowercase and uppercase letters.";
         return false;
     }
-    if (password !== verify) {
+    if (crypto.timingSafeEqual(Buffer.from(password), Buffer.from(verify))) {
         errors.verifyError = "Password must match";
         return false;
     }
@@ -181,8 +181,6 @@ function SessionHandler(db) {
     return true;
 }
 
-    return true;
-}
 
 
     this.handleSignup = (req, res, next) => {
@@ -274,6 +272,7 @@ function SessionHandler(db) {
 }
 
 module.exports = SessionHandler;
+
 
 
 

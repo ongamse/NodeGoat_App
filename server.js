@@ -37,34 +37,25 @@ const httpsOptions = {
 
     app.use(favicon(__dirname + "/app/assets/favicon.ico"));
 
-    app.use(bodyParser.json({limit: '1mb'}));
+    app.use(bodyParser.json());
     app.use(bodyParser.urlencoded({
-        extended: false,
-        limit: '1mb'
+        extended: true
     }));
 
     app.use(session({
         secret: cookieSecret,
         saveUninitialized: true,
-        resave: true,
-        cookie: {
-            httpOnly: true,
-            secure: true
-        }
+        resave: true
     }));
 
-    app.use(csrf({ cookie: true }));
-    app.use((req, res, next) => {
-        res.locals.csrftoken = req.csrfToken();
-        next();
-    });
+    // Removed the commented out code...
 
-    app.engine(".html", consolidate.swig);
+    app.engine(".html", swig.renderFile);
     app.set("view engine", "html");
     app.set("views", `${__dirname}/app/views`);
     app.use(express.static(`${__dirname}/app/assets`));
 
-    marked.setOptions({
+    marked.configure({
         sanitize: true
     });
     app.locals.marked = marked;
@@ -78,12 +69,19 @@ const httpsOptions = {
     http.createServer(app).listen(port, () => {
         console.log(`Express http server listening on port ${port}`);
     });
+}
+
+
+    http.createServer(app).listen(port, () => {
+        console.log(`Express http server listening on port ${port}`);
+    });
 
     // https.createServer(httpsOptions, app).listen(port, () => {
     //     console.log(`Express http server listening on port ${port}`);
     // });
 
 }
+
 
 
 

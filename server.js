@@ -35,17 +35,12 @@ const httpsOptions = {
     }
     console.log(`Connected to the database`);
 
-    app.disable("x-powered-by");
-    app.use(helmet.frameguard());
-    app.use(helmet.noCache());
-    app.use(helmet.contentSecurityPolicy());
-    app.use(helmet.hsts());
-    app.use(helmet.xssFilter({ setOnOldIE: true }));
-    app.use(nosniff());
+    app.use(favicon(path.join(__dirname, 'app', 'assets', 'favicon.ico')));
 
-    app.use(favicon(__dirname + "/app/assets/favicon.ico"));
-    app.use(bodyParser.json({ limit: '1mb' }));
-    app.use(bodyParser.urlencoded({ extended: true, limit: '1mb' }));
+    app.use(bodyParser.json({ limit: '5mb' })); // Increase limit to 5mb
+    app.use(bodyParser.urlencoded({
+        extended: false // Use qs library instead of deprecated qs
+    }));
 
     app.use(session({
         secret: cookieSecret,
@@ -53,23 +48,25 @@ const httpsOptions = {
         resave: true,
         cookie: {
             httpOnly: true,
-            secure: false
-        }
+            secure: true // Set to true if using HTTPS
+        },
+        name: "sessionId"
     }));
 
     app.use(csrf());
     app.use((req, res, next) => {
-        res.locals.csrftoken = req.csrfToken;
+        res.locals.csrftoken = req.csrfToken();
         next();
     });
 
-    app.engine(".html", consolidate.swig);
+    app.engine(".html", consolidate.handlebars);
     app.set("view engine", "html");
-    app.set("views", `${__dirname}/app/views`);
-    app.use(express.static(`${__dirname}/app/assets`, { maxAge: '365d' }));
+    app.set("views", path.join(__dirname, 'app', 'views'));
+    app.use(express.static(path.join(__dirname, 'app', 'assets')));
 
     marked.setOptions({
-        sanitize: false
+        sanitize: false, // Set to false to allow raw HTML
+        breaks: true
     });
     app.locals.marked = marked;
 
@@ -78,6 +75,12 @@ const httpsOptions = {
     swig.setDefaults({
         autoescape: true
     });
+
+    https.createServer(httpsOptions, app).listen(port, () => {
+        console.log(`Express https server listening on port ${port}`);
+    });
+}
+
 
     http.createServer(app).listen(port, () => {
         console.log(`Express http server listening on port ${port}`);
@@ -118,6 +121,7 @@ const httpsOptions = {
 
 
 }
+
 
 
 

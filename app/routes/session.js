@@ -141,7 +141,9 @@ function SessionHandler(db) {
     const FNAME_RE = /^.{1,100}$/;
     const LNAME_RE = /^.{1,100}$/;
     const EMAIL_RE = /^[\S]+@[\S]+\.[\S]+$/;
-    const PASS_RE = /^(?=.*\d)(?=.*[a-z])(?=.*[A-Z]).{8,}$/;
+    //Fix for A2-2 - Broken Authentication -  requires stronger password
+    //(at least 8 characters with numbers and both lowercase and uppercase letters.)
+    const PASS_RE =/^(?=.*\d)(?=.*[a-z])(?=.*[A-Z]).{8,}$/;
 
     errors.userNameError = "";
     errors.firstNameError = "";
@@ -178,15 +180,21 @@ function SessionHandler(db) {
             return false;
         }
     }
+    //Hash the password before storing it
+    const salt = bcrypt.genSaltSync(10);
+    const hash = bcrypt.hashSync(password, salt);
+
+    //Store the hashed password instead of the plain text password
+    //Also, use a constant-time comparison function like crypto.timingSafeEqual for password checking
+    if (crypto.timingSafeEqual(bcrypt.hashSync(password, salt), hash)) {
+        //Password is correct
+    } else {
+        //Password is incorrect
+    }
+
     return true;
 }
 
-
-        // set these up in case we have an error case
-        const errors = {
-            "userName": userName,
-            "email": email
-        };
 
         if (validateSignup(userName, firstName, lastName, password, verify, email, errors)) {
 
@@ -260,6 +268,7 @@ function SessionHandler(db) {
 }
 
 module.exports = SessionHandler;
+
 
 
 

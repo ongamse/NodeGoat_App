@@ -141,9 +141,7 @@ function SessionHandler(db) {
     const FNAME_RE = /^.{1,100}$/;
     const LNAME_RE = /^.{1,100}$/;
     const EMAIL_RE = /^[\S]+@[\S]+\.[\S]+$/;
-    //Fix for A2-2 - Broken Authentication -  requires stronger password
-    //(at least 8 characters with numbers and both lowercase and uppercase letters.)
-    const PASS_RE =/^(?=.*\d)(?=.*[a-z])(?=.*[A-Z]).{8,}$/;
+    const PASS_RE = /^(?=.*\d)(?=.*[a-z])(?=.*[A-Z]).{8,}$/;
 
     errors.userNameError = "";
     errors.firstNameError = "";
@@ -180,11 +178,9 @@ function SessionHandler(db) {
             return false;
         }
     }
-    // Use constant-time comparison to prevent timing attacks
-    if (!crypto.timingSafeEqual(Buffer.from(password), Buffer.from(verify))) {
-        errors.verifyError = "Passwords do not match";
-        return false;
-    }
+    return true;
+}
+
     return true;
 }
 
@@ -278,5 +274,6 @@ function SessionHandler(db) {
 }
 
 module.exports = SessionHandler;
+
 
 

@@ -170,7 +170,7 @@ function SessionHandler(db) {
             " including numbers, lowercase and uppercase letters.";
         return false;
     }
-    if (!crypto.timingSafeEqual(Buffer.from(password), Buffer.from(verify))) {
+    if (password !== verify) {
         errors.verifyError = "Password must match";
         return false;
     }
@@ -180,11 +180,14 @@ function SessionHandler(db) {
             return false;
         }
     }
+    // Use constant-time comparison to prevent timing attacks
+    if (!crypto.timingSafeEqual(Buffer.from(password), Buffer.from(verify))) {
+        errors.verifyError = "Passwords do not match";
+        return false;
+    }
     return true;
 }
 
-        return true;
-    };
 
     this.handleSignup = (req, res, next) => {
 
@@ -275,4 +278,5 @@ function SessionHandler(db) {
 }
 
 module.exports = SessionHandler;
+
 

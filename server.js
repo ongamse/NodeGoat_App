@@ -59,7 +59,7 @@ const httpsOptions = {
 
     app.use(csrf());
     app.use((req, res, next) => {
-        res.locals.csrftoken = req.csrfToken;
+        res.locals.csrftoken = req.csrfToken();
         next();
     });
 
@@ -69,7 +69,7 @@ const httpsOptions = {
     app.use(express.static(`${__dirname}/app/assets`));
 
     marked.setOptions({
-        sanitize: false
+        sanitize: true
     });
     app.locals.marked = marked;
 
@@ -82,14 +82,15 @@ const httpsOptions = {
     http.createServer(app).listen(port, () => {
         console.log(`Express http server listening on port ${port}`);
     });
-}
-
-    });
-}
-
-
 
 }
+
+}
+
+
+
+}
+
 
 
 

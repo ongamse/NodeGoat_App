@@ -60,7 +60,7 @@ function ProfileHandler(db) {
     const testComplyWithRequirements = regexPattern.test(bankRouting);
     // if the regex test fails we do not allow saving
     if (testComplyWithRequirements !== true) {
-        const firstNameSafeString = swigSanitizeHtml(firstName);
+        const firstNameSafeString = firstName;
         return res.render("profile", {
             updateError: "Bank Routing number does not comply with requirements for format specified",
             firstNameSafeString,
@@ -109,9 +109,11 @@ function ProfileHandler(db) {
 
 
 
+
 }
 
 module.exports = ProfileHandler;
+
 
 
 

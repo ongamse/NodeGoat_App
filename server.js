@@ -28,52 +28,55 @@ const httpsOptions = {
 */
 
 (err, db) => {
-  if (err) {
-    console.log("Error: DB: connect");
-    console.log(err);
-    process.exit(1);
-  }
-  console.log(`Connected to the database`);
+    if (err) {
+        console.log("Error: DB: connect");
+        console.log(err);
+        process.exit(1);
+    }
+    console.log(`Connected to the database`);
 
-  app.use(favicon(__dirname + "/app/assets/favicon.ico"));
+    // Removed the commented out code...
 
-  app.use(bodyParser.json());
-  app.use(bodyParser.urlencoded({
-    extended: false
-  }));
+    app.use(favicon(__dirname + "/app/assets/favicon.ico"));
 
-  app.use(session({
-    secret: cookieSecret,
-    saveUninitialized: true,
-    resave: true,
-    cookie: { secure: true }
-  }));
+    app.use(bodyParser.json());
+    app.use(bodyParser.urlencoded({
+        extended: false
+    }));
 
-  app.use(csrf());
-  app.use((req, res, next) => {
-    res.locals.csrftoken = req.csrfToken();
-    next();
-  });
+    app.use(session({
+        secret: cookieSecret,
+        saveUninitialized: true,
+        resave: true
+    }));
 
-  app.engine(".html", consolidate.swig);
-  app.set("view engine", "html");
-  app.set("views", `${__dirname}/app/views`);
-  app.use(express.static(`${__dirname}/app/assets`));
+    app.use(csrf());
+    app.use((req, res, next) => {
+        res.locals.csrftoken = req.csrfToken();
+        next();
+    });
 
-  marked.setOptions({
-    sanitize: true
-  });
-  app.locals.marked = marked;
+    app.engine(".html", consolidate.swig);
+    app.set("view engine", "html");
+    app.set("views", `${__dirname}/app/views`);
+    app.use(express.static(`${__dirname}/app/assets`));
 
-  routes(app, db);
+    marked.setOptions({
+        sanitize: true
+    });
+    app.locals.marked = marked;
 
-  swig.setDefaults({
-    autoescape: true
-  });
+    routes(app, db);
 
-  https.createServer(options, app).listen(port, () => {
-    console.log(`Express https server listening on port ${port}`);
-  });
+    swig.setDefaults({
+        autoescape: true
+    });
+
+    https.createServer(options, app, (req, res) => {
+        console.log(`Express https server listening on port ${port}`);
+    });
+}
+
 }
 
 
@@ -85,6 +88,7 @@ const httpsOptions = {
 
 
 }
+
 
 
 

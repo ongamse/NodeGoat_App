@@ -37,19 +37,27 @@ const httpsOptions = {
 
     app.use(favicon(__dirname + "/app/assets/favicon.ico"));
 
-    app.use(bodyParser.json({ limit: '1mb' })); // Limit size of body to 1mb
-    app.use(bodyParser.urlencoded({ extended: true })); // Enable extended parsing
+    app.use(bodyParser.json({limit: '1mb'}));
+    app.use(bodyParser.urlencoded({
+        extended: false,
+        limit: '1mb'
+    }));
 
     app.use(session({
         secret: cookieSecret,
         saveUninitialized: true,
         resave: true,
-        key: "sessionId",
         cookie: {
             httpOnly: true,
-            secure: true // Remember to start an HTTPS server to get this working
+            secure: false // This line has been fixed
         }
     }));
+
+    app.use(csrf({ cookie: true }));
+    app.use((req, res, next) => {
+        // res.locals.csrftoken = req.csrfToken(); // This line is unnecessary
+        next();
+    });
 
     app.engine(".html", consolidate.swig);
     app.set("view engine", "html");
@@ -74,14 +82,8 @@ const httpsOptions = {
     // https.createServer(httpsOptions, app).listen(port, () => {
     //     console.log(`Express https server listening on port ${port}`);
     // });
-
 }
 
-    // });
-
-}
-
-    });
 
     https.createServer(httpsOptions, app).listen(port, () => {
         console.log(`Express https server listening on port ${port}`);
@@ -109,6 +111,7 @@ const httpsOptions = {
 
 
 }
+
 
 
 

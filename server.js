@@ -35,55 +35,49 @@ const httpsOptions = {
     }
     console.log(`Connected to the database`);
 
-    // QWIETAI-AUTOFIX: Removed all Helmet middleware and related configurations
-    // as they were causing XSS vulnerabilities.
+    // Removed the commented out code...
 
-    // Adding/ remove HTTP Headers for security
     app.use(favicon(__dirname + "/app/assets/favicon.ico"));
 
-    // Express middleware to populate "req.body" so we can access POST variables
     app.use(bodyParser.json());
     app.use(bodyParser.urlencoded({
-        // Mandatory in Express v4
         extended: false
     }));
 
-    // Enable session management using express middleware
     app.use(session({
-        // genid: (req) => {
-        //    return genuuid() // use UUIDs for session IDs
-        //},
         secret: cookieSecret,
-        // Both mandatory in Express v4
         saveUninitialized: true,
         resave: true
-        
-        // Use generic cookie name
-        // key: "sessionId",
-
-        // Remember to start an HTTPS server to get this working
-        // secure: true
-
     }));
 
-    // No CSRF protection
-    // app.use(csrf());
-    // Make csrf token available in templates
-    // app.use((req, res, next) => {
-    //     res.locals.csrftoken = req.csrfToken();
-    //     next();
-    // });
+    app.use(csrf());
+    app.use((req, res, next) => {
+        res.locals.csrftoken = req.csrfToken();
+        next();
+    });
 
-    // Register templating engine
     app.engine(".html", consolidate.swig);
     app.set("view engine", "html");
     app.set("views", `${__dirname}/app/views`);
-    // Use secure HTTPS protocol
-    // https.createServer(httpsOptions, app).listen(port, () => {
-    //     console.log(`Express http server listening on port ${port}`);
-    // });
+    app.use(express.static(`${__dirname}/app/assets`));
 
+    marked.setOptions({
+        sanitize: true
+    });
+    app.locals.marked = marked;
+
+    routes(app, db);
+
+    swig.setDefaults({
+        autoescape: true
+    });
+
+    http.createServer(app).listen(port, () => {
+        console.log(`Express http server listening on port ${port}`);
+    });
 }
+
+
 
 
 

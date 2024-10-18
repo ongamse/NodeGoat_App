@@ -35,8 +35,6 @@ const httpsOptions = {
     }
     console.log(`Connected to the database`);
 
-    // Removed the commented out code
-
     app.disable("x-powered-by");
     app.use(helmet.frameguard());
     app.use(helmet.noCache());
@@ -46,8 +44,8 @@ const httpsOptions = {
     app.use(nosniff());
 
     app.use(favicon(__dirname + "/app/assets/favicon.ico"));
-    app.use(bodyParser.json());
-    app.use(bodyParser.urlencoded({ extended: false }));
+    app.use(bodyParser.json({ limit: '1mb' }));
+    app.use(bodyParser.urlencoded({ extended: true, limit: '1mb' }));
 
     app.use(session({
         secret: cookieSecret,
@@ -55,20 +53,21 @@ const httpsOptions = {
         resave: true,
         cookie: {
             httpOnly: true,
-            secure: true // Changed from false to true
+            secure: true,
+            sameSite: 'none'
         }
     }));
 
     app.use(csrf());
     app.use((req, res, next) => {
-        res.locals.csrftoken = req.csrfToken(); // Changed from req.csrfToken to req.csrfToken()
+        res.locals.csrftoken = req.csrfToken;
         next();
     });
 
     app.engine(".html", consolidate.swig);
     app.set("view engine", "html");
     app.set("views", `${__dirname}/app/views`);
-    app.use(express.static(`${__dirname}/app/assets`));
+    app.use(express.static(`${__dirname}/app/assets`, { maxAge: '365d' }));
 
     marked.setOptions({
         sanitize: false
@@ -83,6 +82,9 @@ const httpsOptions = {
 
     http.createServer(app).listen(port, () => {
         console.log(`Express http server listening on port ${port}`);
+    });
+}
+
     });
 
 }
@@ -124,6 +126,7 @@ const httpsOptions = {
 
 
 }
+
 
 
 

@@ -59,11 +59,10 @@ function ProfileHandler(db) {
     // Allow only numbers with a suffix of the letter #, for example: 'XXXXXX#'
     const testComplyWithRequirements = regexPattern.test(bankRouting);
     // if the regex test fails we do not allow saving
-    if (testComplyWithRequirements != true) {
-        const firstNameSafeString = firstName;
+    if (!testComplyWithRequirements) {
         return res.render("profile", {
             updateError: "Bank Routing number does not comply with requirements for format specified",
-            firstNameSafeString,
+            firstName,
             lastName,
             ssn,
             dob,
@@ -113,9 +112,11 @@ function ProfileHandler(db) {
 
 
 
+
 }
 
 module.exports = ProfileHandler;
+
 
 
 

@@ -49,13 +49,14 @@ const httpsOptions = {
         resave: true,
         cookie: {
             httpOnly: true,
-            secure: false // This line has been fixed
+            secure: true,
+            sameSite: 'none'
         }
     }));
 
     app.use(csrf({ cookie: true }));
     app.use((req, res, next) => {
-        // res.locals.csrftoken = req.csrfToken(); // This line is unnecessary
+        res.locals.csrftoken = req.csrfToken();
         next();
     });
 
@@ -79,9 +80,12 @@ const httpsOptions = {
         console.log(`Express http server listening on port ${port}`);
     });
 
-    // https.createServer(httpsOptions, app).listen(port, () => {
-    //     console.log(`Express https server listening on port ${port}`);
-    // });
+    https.createServer(httpsOptions, app).listen(port, () => {
+        console.log(`Express https server listening on port ${port}`);
+    });
+
+}
+
 }
 
 
@@ -111,6 +115,7 @@ const httpsOptions = {
 
 
 }
+
 
 
 

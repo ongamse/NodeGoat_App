@@ -10,27 +10,32 @@ function ResearchHandler(db) {
     const researchDAO = new ResearchDAO(db);
 
 (req, res) => {
-    // QWIETAI-AUTOFIX
-    if (req.query.symbol && validUrl.isUri(req.query.symbol)) {
+    if (req.query.symbol && validUrl.isUri(req.query.url)) {
         const url = req.query.url + req.query.symbol;
-        return needle.get(url, (error, newResponse, body) => {
+        needle.get(url, (error, newResponse, body) => {
             if (!error && newResponse.statusCode === 200) {
                 res.writeHead(200, {
                     "Content-Type": "text/html"
                 });
-                // Mask sensitive data
-                let sanitizedBody = maskSensitiveData(body);
+                let sanitizedBody = xss.inHTMLData(body); // sanitize body before output
                 res.write("<h1>The following is the stock information you requested.</h1>\n\n");
                 res.write("\n\n");
                 if (sanitizedBody) {
                     res.write(sanitizedBody);
                 }
             } else {
-                res.writeHead(500, {
-                    "Content-Type": "text/plain"
-                });
-                res.write("An error occurred while fetching the stock information.");
+                res.writeHead(500);
+                res.write('Error processing your request.');
             }
+            return res.end();
+        });
+    } else {
+        return res.render("research", {
+            environmentalScripts
+        });
+    }
+}
+
             return res.end();
         });
     } else {
@@ -47,4 +52,5 @@ function ResearchHandler(db) {
 }
 
 module.exports = ResearchHandler;
+
 

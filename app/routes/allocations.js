@@ -39,9 +39,13 @@ function AllocationsHandler(db) {
     });
 }
 
+    });
+}
+
 }
 
 module.exports = AllocationsHandler;
+
 
 
 

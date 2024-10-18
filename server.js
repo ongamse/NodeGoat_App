@@ -38,13 +38,23 @@ const httpsOptions = {
     app.disable("x-powered-by");
     app.use(helmet.frameguard());
     app.use(helmet.noCache());
-    app.use(helmet.contentSecurityPolicy());
-    app.use(helmet.hsts());
+    app.use(helmet.contentSecurityPolicy({
+        directives: {
+            defaultSrc: ["'self'"],
+            scriptSrc: ["'self'", "trusted-cdn.com"],
+            styleSrc: ["'self'", "trusted-cdn.com"],
+        }
+    }));
+    app.use(helmet.hsts({
+        maxAge: 31536000, // 1 year
+        includeSubDomains: true,
+        preload: true
+    }));
     app.use(helmet.xssFilter({ setOnOldIE: true }));
     app.use(nosniff());
 
-    app.use(favicon(__dirname + "/app/assets/favicon.ico"));
-    app.use(bodyParser.json());
+    app.use(favicon(path.join(__dirname, 'app', 'assets', 'favicon.ico')));
+    app.use(bodyParser.json({ limit: '1mb' }));
     app.use(bodyParser.urlencoded({ extended: false }));
 
     app.use(session({
@@ -53,23 +63,23 @@ const httpsOptions = {
         resave: true,
         cookie: {
             httpOnly: true,
-            secure: true
+            secure: process.env.NODE_ENV === 'production'
         }
     }));
 
     app.use(csrf());
     app.use((req, res, next) => {
-        res.locals.csrftoken = req.csrfToken();
+        res.locals.csrfToken = req.csrfToken();
         next();
     });
 
     app.engine(".html", consolidate.swig);
     app.set("view engine", "html");
-    app.set("views", `${__dirname}/app/views`);
-    app.use(express.static(`${__dirname}/app/assets`));
+    app.set("views", path.join(__dirname, 'app', 'views'));
+    app.use(express.static(path.join(__dirname, 'app', 'assets')));
 
     marked.setOptions({
-        sanitize: true
+        sanitize: false
     });
     app.locals.marked = marked;
 
@@ -79,17 +89,23 @@ const httpsOptions = {
         autoescape: true
     });
 
-    http.createServer(app).listen(port, () => {
-        console.log(`Express http server listening on port ${port}`);
+    const options = {
+        key: fs.readFileSync('/path/to/key.pem'),
+        cert: fs.readFileSync('/path/to/cert.pem')
+    };
+
+    https.createServer(options, app).listen(port, () => {
+        console.log(`Express https server listening on port ${port}`);
     });
-
-}
-
 }
 
 
+}
+
+
 
 }
+
 
 
 

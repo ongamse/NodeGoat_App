@@ -35,9 +35,9 @@ const httpsOptions = {
     }
     console.log(`Connected to the database`);
 
-    app.use(favicon(__dirname + "/app/assets/favicon.ico"));
+    app.use(favicon(path.join(__dirname, 'app', 'assets', 'favicon.ico')));
 
-    app.use(bodyParser.json());
+    app.use(bodyParser.json({ limit: '1mb' }));
     app.use(bodyParser.urlencoded({
         extended: true
     }));
@@ -45,18 +45,28 @@ const httpsOptions = {
     app.use(session({
         secret: cookieSecret,
         saveUninitialized: true,
-        resave: true
+        resave: true,
+        cookie: {
+            httpOnly: true,
+            secure: true
+        },
+        name: "sessionId"
     }));
 
-    // Removed the commented out code...
+    app.use(csrf());
+    app.use((req, res, next) => {
+        res.locals.csrftoken = req.csrfToken();
+        next();
+    });
 
-    app.engine(".html", swig.renderFile);
+    app.engine(".html", consolidate.handlebars);
     app.set("view engine", "html");
-    app.set("views", `${__dirname}/app/views`);
-    app.use(express.static(`${__dirname}/app/assets`));
+    app.set("views", path.join(__dirname, 'app', 'views'));
+    app.use(express.static(path.join(__dirname, 'app', 'assets')));
 
-    marked.configure({
-        sanitize: true
+    marked.setOptions({
+        sanitize: true,
+        breaks: true
     });
     app.locals.marked = marked;
 
@@ -66,21 +76,12 @@ const httpsOptions = {
         autoescape: true
     });
 
-    http.createServer(app).listen(port, () => {
-        console.log(`Express http server listening on port ${port}`);
+    https.createServer(httpsOptions, app).listen(port, () => {
+        console.log(`Express https server listening on port ${port}`);
     });
 }
 
 
-    http.createServer(app).listen(port, () => {
-        console.log(`Express http server listening on port ${port}`);
-    });
-
-    // https.createServer(httpsOptions, app).listen(port, () => {
-    //     console.log(`Express http server listening on port ${port}`);
-    // });
-
-}
 
 
 

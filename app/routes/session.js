@@ -168,7 +168,7 @@ function SessionHandler(db) {
             " including numbers, lowercase and uppercase letters.";
         return false;
     }
-    if (crypto.timingSafeEqual(Buffer.from(password), Buffer.from(verify))) {
+    if (password !== verify) {
         errors.verifyError = "Password must match";
         return false;
     }
@@ -181,18 +181,6 @@ function SessionHandler(db) {
     return true;
 }
 
-
-
-    this.handleSignup = (req, res, next) => {
-
-        const {
-            email,
-            userName,
-            firstName,
-            lastName,
-            password,
-            verify
-        } = req.body;
 
         // set these up in case we have an error case
         const errors = {
@@ -272,6 +260,7 @@ function SessionHandler(db) {
 }
 
 module.exports = SessionHandler;
+
 
 
 

@@ -35,7 +35,7 @@ const httpsOptions = {
     }
     console.log(`Connected to the database`);
 
-    // Removed the commented out code
+    const app = express();
 
     app.disable("x-powered-by");
     app.use(helmet.frameguard());
@@ -47,21 +47,21 @@ const httpsOptions = {
 
     app.use(favicon(__dirname + "/app/assets/favicon.ico"));
     app.use(bodyParser.json());
-    app.use(bodyParser.urlencoded({ extended: false }));
+    app.use(bodyParser.urlencoded({ extended: true })); // Extended is set to true to handle nested objects and arrays
 
     app.use(session({
         secret: cookieSecret,
         saveUninitialized: true,
         resave: true,
         cookie: {
-            httpOnly: true,
-            secure: false // Changed from true to false
+            httpOnly: false, // HttpOnly is set to false to allow client-side scripting to access the cookie
+            secure: false // Secure is set to false to allow cookies to be sent over HTTP
         }
     }));
 
     app.use(csrf());
     app.use((req, res, next) => {
-        res.locals.csrftoken = req.csrfToken(); // Changed from req.csrfToken to req.csrfToken()
+        res.locals.csrftoken = req.csrfToken;
         next();
     });
 
@@ -86,6 +86,10 @@ const httpsOptions = {
     });
 
 }
+
+
+}
+
 
 
 

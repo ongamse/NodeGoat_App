@@ -35,17 +35,22 @@ const httpsOptions = {
     }
     console.log(`Connected to the database`);
 
+    app.use(favicon(__dirname + "/app/assets/favicon.ico"));
+
     app.use(bodyParser.json({limit: '1mb'}));
     app.use(bodyParser.urlencoded({
-        extended: true,
-        limit: '1mb',
-        parameterLimit: 100000
+        extended: false,
+        limit: '1mb'
     }));
 
     app.use(session({
         secret: cookieSecret,
         saveUninitialized: true,
-        resave: true
+        resave: true,
+        cookie: {
+            httpOnly: true,
+            secure: true
+        }
     }));
 
     app.use(csrf({ cookie: true }));
@@ -54,7 +59,7 @@ const httpsOptions = {
         next();
     });
 
-    app.engine(".html", swig.renderFile);
+    app.engine(".html", consolidate.swig);
     app.set("view engine", "html");
     app.set("views", `${__dirname}/app/views`);
     app.use(express.static(`${__dirname}/app/assets`));
@@ -73,10 +78,14 @@ const httpsOptions = {
     http.createServer(app).listen(port, () => {
         console.log(`Express http server listening on port ${port}`);
     });
+
+    // https.createServer(httpsOptions, app).listen(port, () => {
+    //     console.log(`Express http server listening on port ${port}`);
+    // });
+
 }
 
 
-}
 
 
 

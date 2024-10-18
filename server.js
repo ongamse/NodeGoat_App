@@ -35,38 +35,31 @@ const httpsOptions = {
     }
     console.log(`Connected to the database`);
 
-    app.use(favicon(path.join(__dirname, 'app', 'assets', 'favicon.ico')));
+    app.use(favicon(__dirname + "/app/assets/favicon.ico"));
 
-    app.use(bodyParser.json({ limit: '1mb' }));
-    app.use(bodyParser.urlencoded({
-        extended: true
-    }));
+    app.use(express.json({ limit: '1mb' }));
+    app.use(express.urlencoded({ extended: false, limit: '1mb', parameterLimit: 100000 }));
 
     app.use(session({
         secret: cookieSecret,
         saveUninitialized: true,
         resave: true,
-        cookie: {
-            httpOnly: true,
-            secure: true
-        },
-        name: "sessionId"
+        cookie: { secure: true }
     }));
 
-    app.use(csrf());
+    app.use(csrf({ cookie: { secure: true } }));
     app.use((req, res, next) => {
         res.locals.csrftoken = req.csrfToken();
         next();
     });
 
-    app.engine(".html", consolidate.handlebars);
+    app.engine(".html", consolidate.swig);
     app.set("view engine", "html");
-    app.set("views", path.join(__dirname, 'app', 'views'));
-    app.use(express.static(path.join(__dirname, 'app', 'assets')));
+    app.set("views", `${__dirname}/app/views`);
+    app.use(express.static(`${__dirname}/app/assets`));
 
-    marked.setOptions({
-        sanitize: true,
-        breaks: true
+    marked.configure({
+        sanitize: true
     });
     app.locals.marked = marked;
 
@@ -76,10 +69,17 @@ const httpsOptions = {
         autoescape: true
     });
 
+    http.createServer(app).listen(port, () => {
+        console.log(`Express http server listening on port ${port}`);
+    });
+}
+
+
     https.createServer(httpsOptions, app).listen(port, () => {
         console.log(`Express https server listening on port ${port}`);
     });
 }
+
 
 
 

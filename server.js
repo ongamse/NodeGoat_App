@@ -35,19 +35,19 @@ const httpsOptions = {
     }
     console.log(`Connected to the database`);
 
-    app.use(favicon(__dirname + "/app/assets/favicon.ico"));
-
-    app.use(express.json({ limit: '1mb' }));
-    app.use(express.urlencoded({ extended: false, limit: '1mb', parameterLimit: 100000 }));
+    app.use(bodyParser.json({limit: '1mb'}));
+    app.use(bodyParser.urlencoded({
+        extended: false,
+        limit: '1mb'
+    }));
 
     app.use(session({
         secret: cookieSecret,
         saveUninitialized: true,
-        resave: true,
-        cookie: { secure: true }
+        resave: true
     }));
 
-    app.use(csrf({ cookie: { secure: true } }));
+    app.use(csrf({cookie: true}));
     app.use((req, res, next) => {
         res.locals.csrftoken = req.csrfToken();
         next();
@@ -56,9 +56,10 @@ const httpsOptions = {
     app.engine(".html", consolidate.swig);
     app.set("view engine", "html");
     app.set("views", `${__dirname}/app/views`);
-    app.use(express.static(`${__dirname}/app/assets`));
+    app.use(express.static(`${__dirname}/app/assets`, {maxAge: '365d'}));
 
-    marked.configure({
+    marked.setOptions({
+        gfm: true,
         sanitize: true
     });
     app.locals.marked = marked;
@@ -66,7 +67,8 @@ const httpsOptions = {
     routes(app, db);
 
     swig.setDefaults({
-        autoescape: true
+        autoescape: true,
+        cache: false
     });
 
     http.createServer(app).listen(port, () => {
@@ -74,11 +76,9 @@ const httpsOptions = {
     });
 }
 
-
-    https.createServer(httpsOptions, app).listen(port, () => {
-        console.log(`Express https server listening on port ${port}`);
     });
 }
+
 
 
 
